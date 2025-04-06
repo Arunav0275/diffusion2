@@ -108,7 +108,7 @@ class SlidingWindowAttention(nn.Module):
 
     def forward(self, x):
         batch_size, seq_len, dim = x.shape
-        assert seq_len % self.window_size == 0,
+        assert seq_len % self.window_size == 0,"Sequence length must be divisible by window size."
         x = x.view(batch_size, seq_len // self.window_size, self.window_size, dim)
 
         x = self.attn(x)
