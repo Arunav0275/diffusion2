@@ -113,7 +113,7 @@ class SlidingWindowAttention(nn.Module):
 
         x = self.attn(x)
         return x.view(batch_size, seq_len, dim)
-    
+         
     
 class DiTBlock(nn.Module):
     """
@@ -121,7 +121,6 @@ class DiTBlock(nn.Module):
     """
     def __init__(self, hidden_size, num_heads, mlp_ratio=4.0, use_swa = False, window_size = 8):
         super().__init__()
-        self.use_swa = use_swa
         self.norm1 = nn.LayerNorm(hidden_size)
         self.norm2 = nn.LayerNorm(hidden_size)
 
@@ -181,6 +180,8 @@ class DiT(nn.Module):
         learn_sigma=True,
         use_swa = False, 
         window_size = 8,
+        num_classes = 1000,
+        class_dropout_prob = 0.1,
         **kwargs
     ):
         super().__init__()
@@ -192,13 +193,15 @@ class DiT(nn.Module):
 
         self.x_embedder = PatchEmbed(input_size, patch_size, in_channels, hidden_size, bias=True)
         self.t_embedder = TimestepEmbedder(hidden_size)
+
+        self.y_embedder = LabelEmbedder(num_classes = num_classes, hidden_size = hidden_size, dropout_prob = class_dropout_prob)
         
         num_patches = self.x_embedder.num_patches
         # Will use fixed sin-cos embedding:
         self.pos_embed = nn.Parameter(torch.zeros(1, num_patches, hidden_size), requires_grad=False)
 
         self.blocks = nn.ModuleList([
-            DiTBlock(hidden_size, num_heads, use_swa = use_swa, window_size = window_size) for _ in range(depth)
+            DiTBlock(hidden_size = hidden_size, num_heads = num_heads, use_swa = use_swa, window_size = window_size) for _ in range(depth)
         ])
         self.final_layer = FinalLayer(hidden_size, patch_size, self.out_channels)
         self.initialize_weights()
