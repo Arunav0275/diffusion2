@@ -121,6 +121,7 @@ class DiTBlock(nn.Module):
     """
     def __init__(self, hidden_size, num_heads, mlp_ratio=4.0, use_swa = False, window_size = 8):
         super().__init__()
+        self.use_swa = use_swa
         self.norm1 = nn.LayerNorm(hidden_size)
         self.norm2 = nn.LayerNorm(hidden_size)
 
